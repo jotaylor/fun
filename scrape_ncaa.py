@@ -214,7 +214,46 @@ def compile_team_info(espn_dict):
 #-----------------------------------------------------------------------------# 
 #-----------------------------------------------------------------------------#
 
+def print_indiana():
+
+    template = """
+           ______
+          |_    _| 
+    ______  |  |  ______
+   |_    _| |  | |_    _|
+     |  |   |  |   |  |
+     |  |   |  |   |  |
+     |  |   |  |   |  |
+     |  |   |  |   |  | 
+     |  |   |  |   |  | 
+     |  |___|  |___|  | 
+     \                /
+       -----|  |----- 
+           _|  |_
+          |______|
+
+"""
+    print("Indiana, Our Indiana")
+    print("Indiana, we're all for you")
+    print("We will fight for")
+    print("the Cream & Crimson")
+    print("For the glory of old IU")
+    print("Never daunted, we cannot falter")
+    print("In a battle, we're tried and true")
+    print("Indiana, Our Indiana")
+    print("Indiana, we're all for you!")      
+    print(template)
+
+
+
+#-----------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
+
 if __name__ == "__main__":
+    LINEOUT = "#-----------------------------------------------------------------------------#"
+    print("{0}\n HOO HOO HOO HOOSIERS!\n{1}".format(LINEOUT, LINEOUT))
     espn_dict, season = parse_espn()
     team_dict = compile_team_info(espn_dict)
     plot_rank_v_week(team_dict, season, True)
+    print(LINEOUT)
+    #print_indiana()
