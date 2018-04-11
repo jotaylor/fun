@@ -137,14 +137,14 @@ def plot_rank_v_week(team_dict, season, save):
 
     for team in team_dict["ap"].keys():
         fig, ax = pl.subplots(figsize=(9, 6))
-        ap_ranks = team_dict["ap"][team]
-        ap_weeks = range(len(ap_ranks))
+        ap_ranks = team_dict["ap"][team]["ranks"]
+        ap_weeks = team_dict["ap"][team]["weeks"]
         ax.plot(ap_weeks, ap_ranks, "o-", color="royalblue", label="AP")
         # The AP and USA polls differ sometimes, so check if team is ranked in
         # both polls.
         try:
-            usa_ranks = team_dict["usa"][team]
-            usa_weeks = range(len(usa_ranks))
+            usa_ranks = team_dict["usa"][team]["ranks"]
+            usa_weeks = team_dict["usa"][team]["weeks"]
         except KeyError:
             pass    
         # If the team is ranked in USA as well, plot both. Otherwise only plot
@@ -153,7 +153,7 @@ def plot_rank_v_week(team_dict, season, save):
             ax.plot(usa_weeks, usa_ranks, "o-", color="mediumturquoise", label="USA")
         
         ax.set_ylim(26, -1)
-        ax.set_xlim(-1, 18)
+        ax.set_xlim(0, 19)
         ax.legend(loc="best")
         ax.set_xlabel("Week")
         ax.set_ylabel("Rank")
@@ -189,6 +189,8 @@ def compile_team_info(espn_dict):
             Dictionary describing teams as a function of rank.
     '''
     
+    from collections import defaultdict
+
     # Initialize dictionary.
     team_dict = {}
     for poll in espn_dict.keys():
@@ -205,21 +207,9 @@ def compile_team_info(espn_dict):
                 # If team not ranked, add it to team_dict and fill in previous
                 # weeks (if not week 1) with "unranked", which I call rank=30.
                 if teams[i] not in team_dict[poll].keys():
-                    if int(week) == 1:
-                        team_dict[poll][teams[i]] = [ranks[i]]
-                    else:
-                        team_dict[poll][teams[i]] = [30 for x in range(int(week)-1)]
-                        team_dict[poll][teams[i]].append(ranks[i])
-                # If team has already been ranked in a previous week, just add 
-                # current rank to its rank list.
-                else:
-                    team_dict[poll][teams[i]].append(ranks[i])
-
-            # Loop over teams already ranked, if they were not ranked during 
-            # week, add "unranked (rank=30) to ranks list. 
-            for team in team_dict[poll].keys():
-                if len(team_dict[poll][team]) != week:
-                    team_dict[poll][team].append(30)
+                    team_dict[poll][teams[i]] = defaultdict(list)
+                team_dict[poll][teams[i]]["weeks"].append(int(week))
+                team_dict[poll][teams[i]]["ranks"].append(ranks[i])
 
     return team_dict                    
 
@@ -268,4 +258,4 @@ if __name__ == "__main__":
     team_dict = compile_team_info(espn_dict)
     plot_rank_v_week(team_dict, season, True)
     print(LINEOUT)
-    print_indiana()
+    #print_indiana()
