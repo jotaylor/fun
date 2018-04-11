@@ -57,6 +57,8 @@ def parse_espn():
     # Preseason = Week 1
     if "Preseason" in header:
         final_week = "1"
+    elif "Postseason" in header:
+        final_week = "18"
     else:
         final_week = words[words.index("Week") + 1]
    
@@ -90,14 +92,23 @@ def parse_espn():
                 elif i == 1:
                     continue
                 else:
+                    if "No rankings available" in cols[0].get_text():
+                        nodata = True
+                    else:
+                        nodata = False
                     # Get the rank, team, and season record 
                     for ind, key in enumerate(["rank","team","record"]):
                         if not key in espn_dict[poll][week].keys():
                             espn_dict[poll][week][key] = []
+                        if nodata is True:
+                            espn_dict[poll][week][key].append(0)
+                            continue
                         # Need to do split and strip on result to ensure you
                         # get full team name (e.g. Notre Dame)
                         colval = cols[ind].get_text()
                         keyval = colval.split("(")[0].strip()
+                        if key == "rank":
+                            keyval = int(keyval)
                         espn_dict[poll][week][key].append(keyval)
 
     return espn_dict, season
@@ -148,7 +159,7 @@ def plot_rank_v_week(team_dict, season, save):
         ax.set_ylabel("Rank")
         ax.set_title("{0} {1} Rankings".format(season, team))
         if save:
-            figname = "{0}_rank_v_time.png".format(team)
+            figname = "{}_{}_rank_v_time.png".format(season, team.replace(" ", ""))
             fig.savefig(figname, bbox_inches="tight", dpi=200)
             print("Saved {0}".format(figname))
         else:
@@ -257,4 +268,4 @@ if __name__ == "__main__":
     team_dict = compile_team_info(espn_dict)
     plot_rank_v_week(team_dict, season, True)
     print(LINEOUT)
-    #print_indiana()
+    print_indiana()
