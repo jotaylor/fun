@@ -9,8 +9,11 @@ def parse_bwayleague(url="https://www.broadwayleague.com/research/grosses-broadw
     df = H.tables[0]
     for colname in df.columns:
         if colname == "Show":
-            col = df[colname]
-            get_link_df(col)
+            col = [row.get_text() for row in df[colname]]
+            df[colname] = col
+# Not sure how to do this yet
+#            col = df[colname]
+#            get_link_df(col)
             continue
         else:
             col = [row.get_text() for row in df[colname]]
@@ -41,6 +44,4 @@ def get_link(col):
     hyperlink = [row.find("a") for row in col]
     href = ["https://www.broadwayleague.com"+row["href"] for row in hyperlink]
     
-
-
 
