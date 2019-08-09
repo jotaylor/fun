@@ -8,11 +8,26 @@ import numpy as np
 BWAY_LEAGUE = "https://www.broadwayleague.com/research/grosses-broadway-nyc"
 
 class BwayData:
+    """
+    A way to handle the data from Broadway League statistics.
+    For now the only attribute is data, but more will be added.
+
+    Args:
+        df (:obj:`pandas.DataFrame`): dataframe containing show statistics.
+    """
     def __init__(self, df):
         self.data = df
 
     @classmethod
     def from_url(cls, url=BWAY_LEAGUE):
+        """
+        Instantiate the class by parsing the data directly from the
+        Broadway League website. All modifications to HTML data are done
+        in place.
+
+        Args: 
+            url (str): URL to parse.
+        """
         H = HTMLTableParser(url, keeptags=True)
         assert len(H.tables) == 1, "API of URL changed, expected one table, got {}".format(len(H.tables))
         df = H.tables[0]
@@ -64,6 +79,10 @@ class BwayData:
         return cls(df2)
 
     def plot_grosses(self):
+        """
+        Plot the gross and scaled gross values (gross per show) as a
+        function of show, for one given week.
+        """
         fig = go.Figure()
         trace0 = go.Scatter(x=self.data["show"], y=self.data["gross"],
                             mode="markers+lines",
@@ -92,11 +111,13 @@ class BwayData:
         fig.write_html("grosses.html", auto_open=True)
 
 #-----------------------------------------------------------------------------#        
-def removechar(col, char):
-    stripcol = [row.replace(char, "") for row in col]
-    return stripcol
+def removechar(arr, char):
+    """ Remove a string character from each element in an array. """
+    striparr = [row.replace(char, "") for row in arr]
+    return striparr
 
-def get_link(col):
-    hyperlink = [row.find("a") for row in col]
+def get_link(arr):
+    """ Get URL link for each BSD tag object in an array. """
+    hyperlink = [row.find("a") for row in arr]
     href = ["https://www.broadwayleague.com"+row["href"] for row in hyperlink]
     
