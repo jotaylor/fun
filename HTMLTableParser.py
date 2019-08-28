@@ -16,18 +16,25 @@ class HTMLTableParser:
             dataframe. This is useful if there is metainformation of interest
             e.g. links.
     """
-    def __init__(self, url, keeptags=False):
-        self.url = url
+    def __init__(self, soup, keeptags=False):
         self._keeptags = keeptags
-        self.soup = self.soupify()
+        self.soup = soup
         self.parse_tables()
-         
-    def soupify(self):
-        """ Parse URL. """
-        response = requests.get(self.url)
-        soup = BeautifulSoup(response.text, "html.parser")
-        return soup
+   
+    @classmethod
+    def from_url(cls, url, keeptags=False):
+        soup = soupify(url=url)
+        c = cls(soup, keeptags)
+        c.url = url
+        return c
 
+    @classmethod
+    def from_html(cls, html, keeptags=False):
+        soup = soupify(html=html)
+        c = cls(soup, keeptags)
+        c.html = html
+        return c
+         
     def parse_tables(self):
         """ Parse all HTML tables in the URL, storing header and row information. """
         self.tables = []
@@ -64,3 +71,28 @@ class HTMLTableParser:
             df = pd.DataFrame(data=data)
             self.tables.append(df)
              
+def soupify(url=None, html=None, text=None, parser="html.parser"):
+    """ 
+    Parse URL. 
+    
+    Args:
+        url (str): URL to parse.
+        html (str): Downloaded HTML file to parse.
+        text (str): Raw string text to parse.
+        parser (str): BeautifulSoup parser type.
+
+    Returns:
+        soup (bs4.BeautifulSoup): BeautifulSoup object containing HTML info.
+    """
+
+    if url is not None:
+        response = requests.get(url)
+        primordial = response.text
+    elif html is not None:
+        with open(html) as f:
+            primordial = f.read()
+    elif text is not None:
+        primordial = text
+    soup = BeautifulSoup(primordial, "html.parser")
+   
+    return soup
