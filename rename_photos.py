@@ -7,6 +7,27 @@ import glob
 import os
 import datetime
 
+def parse_direc(direc):
+    """
+    Parse files in specified directory.
+
+    Args:
+        direc (str): Directory where files reside. Supported filetypes: jpeg,
+            png.
+    Returns:
+        files (array-like) Files to be renamed.
+    """
+    print("Working in directory {}".format(direc))
+
+    files = glob.glob(os.path.join(direc, "*jpeg")) + \
+            glob.glob(os.path.join(direc, "*jpg")) + \
+            glob.glob(os.path.join(direc, "*png")) + \
+            glob.glob(os.path.join(direc, "*JPEG")) + \
+            glob.glob(os.path.join(direc, "*JPG")) + \
+            glob.glob(os.path.join(direc, "*PNG"))
+
+    return files
+
 def get_exif(filename):
     """ 
     Modified from code at:
@@ -29,42 +50,36 @@ def get_exif(filename):
     
     return exif_info
 
-def rename_files(direc, in_format="%Y:%m:%d %H:%M:%S", 
-                 out_format="%Y%m%d_%H%M%S"):
+def rename_files(files, in_format="%Y:%m:%d %H:%M:%S", 
+                 out_format="%Y%m%d_%H%M%S", 
+                 offset=None):
     """
     Rename photo filenames to reflect their datetime.
 
     Args:
-        direc (str): Directory where files reside. Supported filetypes: jpeg,
-            png.
+        files (array-liked): Files to be renamed.
         in_format (str): Input photo's EXIF DateTime format in
             datetime.datetime nomenclature.
         out_format (str): Renamed output photo's name format in 
             datetime.datetime noemnclature.
+        offset (float or None): If not None, an offset, in hours,
+            to apply to the datetime filename.
     Returns:
         None
     """
-
-    print("Working in directory {}".format(direc))
-
-    files = glob.glob(os.path.join(direc, "*jpeg")) + \
-            glob.glob(os.path.join(direc, "*jpg")) + \
-            glob.glob(os.path.join(direc, "*png")) + \
-            glob.glob(os.path.join(direc, "*JPEG")) + \
-            glob.glob(os.path.join(direc, "*JPG")) + \
-            glob.glob(os.path.join(direc, "*PNG"))
 
     for item in files:
         filename = os.path.basename(item)
         file_noext = filename.split(".")[0]
         # Sometimes the file format is already what we want.
-        try:
-            dt = datetime.datetime.strptime(file_noext, out_format)
-            continue
-        except:
-            pass
+#        try:
+#            dt = datetime.datetime.strptime(file_noext, out_format)
+#            continue
+#        except:
+#            pass
         
         exif_info = get_exif(item)
+        
         # In case the file doesn't have the necessary data.
         if exif_info is None:
             print("\tERROR: Cannot get EXIF info for {}".format(filename))
@@ -72,6 +87,8 @@ def rename_files(direc, in_format="%Y:%m:%d %H:%M:%S",
         
         p_date = exif_info["DateTime"]
         p_dt = datetime.datetime.strptime(p_date, in_format)
+        if offset is not None:
+            p_dt += datetime.timedelta(hours=offset)
         out_name = p_dt.strftime(out_format)
         out_file = item.replace(file_noext, out_name)
         # These shouldn't happen, but just in case.
@@ -94,4 +111,5 @@ if __name__ == "__main__":
                         help="Renamed output photo's name format")
     args = parser.parse_args()
     
-    rename_files(args.direc, args.in_format, args.out_format)
+    files = parse_direc(args.direc)
+    rename_files(files, args.in_format, args.out_format)
